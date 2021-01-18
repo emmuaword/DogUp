@@ -14,8 +14,10 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         btn_open_permission.setOnClickListener {
-                startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
         }
+        btn_print.setOnClickListener { message.text = Params.nodeText.toString() }
+        cb_skip.setOnClickListener { Params.isSkip=cb_skip.isChecked}
     }
 
 }

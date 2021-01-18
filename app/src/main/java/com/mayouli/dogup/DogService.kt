@@ -4,6 +4,7 @@ import android.accessibilityservice.AccessibilityService
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.text.TextUtils
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED
@@ -29,15 +30,15 @@ class DogService : AccessibilityService() {
         Log.d(TAG, event?.eventType.toString())
         if (event?.eventType == TYPE_WINDOW_STATE_CHANGED) {
             if (event.source != null) {
-                hasDogInfo(event.source)
-                if (mHasDog) {
-                    val currentTime = System.currentTimeMillis()
-                    if (currentTime - mLastStateTime > 1 * 1000) {
-                        mLastStateTime = currentTime
-                        Log.d(TAG, "开始做任务")
-                        performSth(0, event.source)
-                    }
+//                hasDogInfo(event.source)
+//                if (mHasDog) {
+                val currentTime = System.currentTimeMillis()
+                if (currentTime - mLastStateTime > 1 * 1000) {
+                    mLastStateTime = currentTime
+                    Log.d(TAG, "开始做任务")
+                    performSth(0, event.source)
                 }
+//                }
 
 //            }
             }
@@ -65,6 +66,11 @@ class DogService : AccessibilityService() {
 
     var isFind = false
 
+    /**
+     * 用于跳过邀请好友的那一步
+     */
+    var isFirstFind = true
+
     @RequiresApi(Build.VERSION_CODES.JELLY_BEAN_MR2)
     private fun performSth(index: Int, rootNode: AccessibilityNodeInfo) {
 
@@ -77,21 +83,29 @@ class DogService : AccessibilityService() {
                 }
             }
         } else {
-            if (rootNode.text != null) {
-                if (rootNode.text.contains("逛店8秒并关注") ||
-                    rootNode.text.contains("浏览8秒可得") ||
+            if (rootNode.text != null && TextUtils.isEmpty(rootNode.text).not()) {
+                if (rootNode.text.contains("浏览8秒") ||
+                    rootNode.text.contains("浏览并关注") ||
                     rootNode.text.contains("浏览可得")
                 ) {
+                    if (Params.isSkip && isFirstFind) {
+                        isFirstFind = false
+                        return
+                    }
                     var viewTime = 15 * 1000
                     if (rootNode.text.contains("浏览可得")) {
                         viewTime = 4 * 1000
                     }
                     val toFinishNode = rootNode.parent.getChild(index + 1)
+                    if (toFinishNode.text.contains("已完成")) {
+                        return
+                    }
                     Log.d(TAG, "find-->" + rootNode.text + "  " + toFinishNode.text)
                     isFind = true
                     toFinishNode.performAction(AccessibilityNodeInfo.ACTION_CLICK)
                     uiHandler.postDelayed(Runnable {
                         isFind = false
+                        isFirstFind = true
                         performGlobalAction(GLOBAL_ACTION_BACK)
                     }, viewTime.toLong())
                     return
