@@ -84,7 +84,8 @@ class DogService : AccessibilityService() {
             }
         } else {
             if (rootNode.text != null && TextUtils.isEmpty(rootNode.text).not()) {
-                if (rootNode.text.contains("浏览8秒") ||
+                if (rootNode.text.contains("逛店8秒")||
+                    rootNode.text.contains("浏览8秒") ||
                     rootNode.text.contains("浏览并关注") ||
                     rootNode.text.contains("浏览可得")
                 ) {
@@ -96,9 +97,16 @@ class DogService : AccessibilityService() {
                     if (rootNode.text.contains("浏览可得")) {
                         viewTime = 4 * 1000
                     }
-                    val toFinishNode = rootNode.parent.getChild(index + 1)
+                    var toFinishNode = rootNode.parent.getChild(index + 1)
                     if (toFinishNode.text.contains("已完成")) {
                         return
+                    }
+                    if (toFinishNode.text.contains("去完成").not()){
+                        try {
+                            toFinishNode= rootNode.parent.getChild(index + 2)
+                        } catch (e: Exception) {
+                            e.printStackTrace()
+                        }
                     }
                     Log.d(TAG, "find-->" + rootNode.text + "  " + toFinishNode.text)
                     isFind = true
